@@ -3,9 +3,13 @@ package com.api.Citaya.models;
 import jakarta.persistence.*;
 import java.util.Date;
 
+// La anotación @Entity se utiliza para indicar que esta clase es una entidad de JPA (Java Persistence API) y se mapeará a una tabla en la base de datos.
 @Entity
 @Table (name = "Pacientes")
 public class PacienteModel {
+    // Atributos de la clase PacienteModel
+    // La anotación @GeneratedValue se utiliza para indicar que el valor del campo "id" se generará automáticamente
+    // por la base de datos.
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     @Column (name = "Id_Paciente")
