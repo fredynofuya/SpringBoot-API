@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Optional;
+
+// Permite solicitudes de cualquier origen, lo que es útil para el desarrollo y pruebas, pero se debe configurar adecuadamente en producción para evitar problemas de seguridad
+@CrossOrigin("*")
 // Controlador REST para manejar las solicitudes relacionadas con los pacientes, mapea las solicitudes a "/paciente"
 @RestController
 // Mapea las solicitudes a "/paciente"
@@ -26,6 +29,12 @@ public class PacienteController {
     @GetMapping(path = "/{id}")
     public Optional<PacienteModel> getPacienteById(@PathVariable("id") int id) {
         return this.pacienteService.getById(id);
+    }
+
+    // Obtener un paciente por documento
+    @GetMapping("/documento/{documento}")
+    public Optional<PacienteModel> getByDocumento(@PathVariable String documento) {
+        return pacienteService.getByDocumento(documento);
     }
 
     //Crear un nuevo paciente, devuelve el paciente creado

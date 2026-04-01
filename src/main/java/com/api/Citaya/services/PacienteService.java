@@ -17,13 +17,18 @@ public class PacienteService {
     IPacienteRepository pacienteRepository;
 
     //Muestra todos los pacientes registrados en la base de datos
-    public ArrayList <PacienteModel> getPacientes() {
+    public ArrayList<PacienteModel> getPacientes() {
         return (ArrayList<PacienteModel>) pacienteRepository.findAll();
     }
 
     //Muestra un paciente por id, devuelve un Optional<PacienteModel> para manejar el caso en el que no se encuentre el paciente
-    public Optional<PacienteModel> getById(int id){
+    public Optional<PacienteModel> getById(int id) {
         return pacienteRepository.findById(id);
+    }
+
+    //Muestra un paciente por documento, devuelve un Optional<PacienteModel> para manejar el caso en el que no se encuentre el paciente
+    public Optional<PacienteModel> getByDocumento(String documento) {
+        return pacienteRepository.findByDocumento(documento);
     }
 
     //Crea un nuevo paciente, devuelve el paciente creado

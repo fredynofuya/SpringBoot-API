@@ -66,6 +66,83 @@ public class CitaModel {
     @Column(name = "Fecha_Actualizacion")
     private LocalDateTime fecha_actualizacion;
 
+    @Transient
+    private String nombre;
+
+    @Transient
+    private String email;
+
+    @Transient
+    private String tipo_documento;
+
+    @Transient
+    private String documento;
+
+    @Transient
+    private String telefono;
+
+    @Transient
+    private String eps;
+
+    @Transient
+    private LocalDateTime fecha_registro;
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getTipo_documento() {
+        return tipo_documento;
+    }
+
+    public void setTipo_documento(String tipo_documento) {
+        this.tipo_documento = tipo_documento;
+    }
+
+    public String getDocumento() {
+        return documento;
+    }
+
+    public void setDocumento(String documento) {
+        this.documento = documento;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public String getEps() {
+        return eps;
+    }
+
+    public void setEps(String eps) {
+        this.eps = eps;
+    }
+
+    public LocalDateTime getFecha_registro() {
+        return fecha_registro;
+    }
+
+    public void setFecha_registro(LocalDateTime fecha_registro) {
+        this.fecha_registro = fecha_registro;
+    }
+
     public int getId() {
         return id;
     }
