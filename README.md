@@ -15,33 +15,26 @@ Este proyecto corresponde al backend de una aplicación para la gestión de cita
 ## ⚙️ Configuración del proyecto
 
 ### 1. Clonar repositorio
-
-```bash
-git clone https://github.com/fredynofuya/SpringBoot-API.git
-cd SpringBoot-API
-
+- git clone https://github.com/fredynofuya/SpringBoot-API.git
+- cd SpringBoot-API
+---
 ### 2. Configurar base de datos
-
-Crear base de datos en MySQL:
-
-```SQL
-CREATE DATABASE citaya
-
+- Crear base de datos en MySQL:
+- CREATE DATABASE citaya
+---
 ### 3. Configurar base de datos
 
-spring.datasource.url=jdbc:mysql://localhost:3306/citaya
-spring.datasource.username=root
-spring.datasource.password=
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-
+- spring.datasource.url=jdbc:mysql://localhost:3306/citaya
+- spring.datasource.username=root
+- spring.datasource.password=
+- spring.jpa.hibernate.ddl-auto=update
+- spring.jpa.show-sql=true
+---
 ### 4. Ejecutar proyecto
-mvn clean install
-mvn spring-boot:run
-
+- mvn clean install
+- mvn spring-boot:run
+---
 ### 4. Endpoints principales
-/pacientes
-/medicos
-/citas
-
+- /pacientes
+- /medicos
+- /citas
