@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,6 +21,14 @@ public class CitaService {
 
     public Optional <CitaModel> getById(int id) {
         return citaRepository.findById(id);
+    }
+
+    public List<CitaModel> getByEstado(String estado) {
+
+        CitaModel.Estado estadoEnum =
+                CitaModel.Estado.valueOf(estado.toUpperCase());
+
+        return citaRepository.findByEstado(estadoEnum);
     }
 
     public CitaModel postCita(CitaModel cita) {

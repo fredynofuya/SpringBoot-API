@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 // Permite solicitudes de cualquier origen, lo que es útil para el desarrollo y pruebas, pero se debe configurar
@@ -68,6 +69,12 @@ public class CitaController {
         public Optional<CitaModel> getCitaById(@PathVariable("id") int id) {
             return this.citaService.getById(id);
         }
+
+        @GetMapping("/estado/{estado}")
+        public List<CitaModel> getByEstado(@PathVariable String estado) {
+
+        return citaService.getByEstado(estado);
+    }
 
         // Crear una nueva cita, devuelve la cita creada, si el paciente no existe, se crea un nuevo paciente con los datos
         // de la cita, si el paciente existe, se actualizan los datos del paciente con los datos de la cita, para que se
