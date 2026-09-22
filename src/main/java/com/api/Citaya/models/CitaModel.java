@@ -24,13 +24,13 @@ public class CitaModel {
     @Column (name = "Id_Medico")
     private int id_medico;
 
-    @Column (name = "Id_Especialidad")
+    @Transient
     private int id_especialidad;
 
-    @Column (name = "Id_consultorio")
+    @Transient
     private int id_consultorio;
 
-    @Column (name = "Id_documento")
+    @Transient
     private int id_documento;
 
     @Column (name = "Fecha")
@@ -52,7 +52,7 @@ public class CitaModel {
     @Enumerated(EnumType.STRING)
     private Estado estado = Estado.SOLICITADA;
 
-    @Column (name = "Mensaje")
+    @Column (name = "Motivo")
     private String mensaje;
 
     @Column (name = "Observaciones")
