@@ -5,7 +5,9 @@ import com.api.Citaya.models.PacienteModel;
 import com.api.Citaya.repositories.IPacienteRepository;
 import com.api.Citaya.services.CitaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -54,10 +56,13 @@ public class CitaController {
                     cita.setNombre(paciente.getNombre());
                     cita.setEmail(paciente.getEmail());
                     cita.setTelefono(paciente.getTelefono());
-                    cita.setEps(paciente.getEps());
+
                     cita.setDocumento(paciente.getDocumento());
-                    //cita.setTipo_documento(paciente.getTipoDocumento());
-                    //cita.setFecha_registro(paciente.getFechaRegistro());
+                    cita.setTipo_documento(paciente.getTipo_documento() !=null
+                            ? paciente.getTipo_documento().name(): null);
+
+                    cita.setEps(paciente.getEps() != null
+                            ? paciente.getEps().name() : null);
                 }
             }
 
@@ -75,6 +80,31 @@ public class CitaController {
 
         return citaService.getByEstado(estado);
     }
+
+    // Convierte el texto de tipo_documento que llega en el request a la enum de PacienteModel.
+    // Lanza 400 con mensaje claro si el valor no es CC, TI, CE o PASAPORTE.
+        private PacienteModel.TipoDocumento parseTipoDocumento(String valor) {
+            if (valor == null) return null;
+            try {
+                return PacienteModel.TipoDocumento.valueOf(valor.trim().toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "tipo_documento inválido. Use uno de: CC, TI, PASAPORTE");
+            }
+        }
+
+        // Convierte el texto de eps que llega en el request a la enum de PacienteModel.
+    // Lanza 400 con mensaje claro si el valor no es SURA, SANITAS o SAVIASALUD.
+    private PacienteModel.Eps parseEps(String valor) {
+        if (valor == null) return null;
+        try {
+            return PacienteModel.Eps.valueOf(valor.trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "eps inválida. Use uno de: SURA, SANITAS, SAVIASALUD");
+        }
+    }
+
 
         // Crear una nueva cita, devuelve la cita creada, si el paciente no existe, se crea un nuevo paciente con los datos
         // de la cita, si el paciente existe, se actualizan los datos del paciente con los datos de la cita, para que se
@@ -102,7 +132,24 @@ public class CitaController {
             paciente.setNombre(cita.getNombre());
             paciente.setEmail(cita.getEmail());
             paciente.setTelefono(cita.getTelefono());
-            paciente.setEps(cita.getEps());
+
+            PacienteModel.TipoDocumento tipoDoc = parseTipoDocumento(cita.getTipo_documento());
+            if (tipoDoc != null) {
+                paciente.setTipo_documento(tipoDoc);
+            } else if (paciente.getTipo_documento() == null) {
+                // Es NOT NULL en la BD: si es paciente nuevo y no llegó el dato, falla explícito en vez de dejar que MySQL lo haga
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tipo_documento es obligatorio");
+            }
+
+            // eps es NOT NULL en la BD: validar y asignar
+            PacienteModel.Eps eps = parseEps(cita.getEps());
+            if (eps != null) {
+                paciente.setEps(eps);
+            } else if (paciente.getEps() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "eps es obligatoria");
+            }
+
+
 
             // Guardar paciente
             paciente = pacienteRepository.save(paciente);
@@ -112,7 +159,10 @@ public class CitaController {
             cita.setNombre(paciente.getNombre());
             cita.setEmail(paciente.getEmail());
             cita.setTelefono(paciente.getTelefono());
-            cita.setEps(paciente.getEps());
+            cita.setTipo_documento(paciente.getTipo_documento() != null
+                    ? paciente.getTipo_documento().name() : null);
+            cita.setEps(paciente.getEps() != null
+                    ? paciente.getEps().name() : null);
 
             return citaService.postCita(cita);
         }
@@ -141,14 +191,25 @@ public class CitaController {
             var telefono = Optional.ofNullable(request.getTelefono())
                     .orElse(paciente.getTelefono());
 
-            var eps = Optional.ofNullable(request.getEps())
-                    .orElse(paciente.getEps());
+
 
             // Actualizar datos
             paciente.setNombre(nombre);
             paciente.setEmail(email);
             paciente.setTelefono(telefono);
-            paciente.setEps(eps);
+
+            // tipo_documento: solo se sobreescribe si llega un valor válido en el request
+            PacienteModel.TipoDocumento tipoDoc = parseTipoDocumento(request.getTipo_documento());
+            if (tipoDoc != null) {
+                paciente.setTipo_documento(tipoDoc);
+            }
+
+            // eps: solo se sobreescribe si llega un valor válido en el request
+            PacienteModel.Eps eps = parseEps(request.getEps());
+            if (eps != null) {
+                paciente.setEps(eps);
+            }
+
             // Guardar paciente
             paciente = pacienteRepository.save(paciente);
             // Asignar a cita
@@ -156,7 +217,11 @@ public class CitaController {
             request.setNombre(paciente.getNombre());
             request.setEmail(paciente.getEmail());
             request.setTelefono(paciente.getTelefono());
-            request.setEps(paciente.getEps());
+            request.setTipo_documento(paciente.getTipo_documento() != null
+                    ? paciente.getTipo_documento().name() : null);
+            request.setEps(paciente.getEps() != null
+                    ? paciente.getEps().name() : null);
+
 
             return this.citaService.putCita(request, id);
         }

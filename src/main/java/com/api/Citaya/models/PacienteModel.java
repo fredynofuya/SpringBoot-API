@@ -21,8 +21,13 @@ public class PacienteModel {
     @Column (name = "Email")
     private String email;
 
+    public enum TipoDocumento {
+        CC, TI, PASAPORTE
+    }
+
     @Column (name = "Tipo_Documento")
-    private String tipo_documento;
+    @Enumerated(EnumType.STRING)
+    private TipoDocumento tipo_documento;
 
     @Column (name = "Documento")
     private String documento;
@@ -30,8 +35,13 @@ public class PacienteModel {
     @Column (name = "Telefono")
     private String telefono;
 
+    public enum Eps {
+        SURA, SANITAS, SAVIASALUD
+    }
+
     @Column (name = "Eps")
-    private String eps;
+    @Enumerated(EnumType.STRING)
+    private Eps eps;
 
     @Column (name = "Fecha_Registro")
     private Date fecha_registro;
@@ -60,11 +70,11 @@ public class PacienteModel {
         this.email = email;
     }
 
-    public String getTipo_documento() {
+    public TipoDocumento getTipo_documento() {
         return tipo_documento;
     }
 
-    public void setTipo_documento(String tipo_documento) {
+    public void setTipo_documento(TipoDocumento tipo_documento) {
         this.tipo_documento = tipo_documento;
     }
 
@@ -84,13 +94,8 @@ public class PacienteModel {
         this.telefono = telefono;
     }
 
-    public String getEps() {
-        return eps;
-    }
-
-    public void setEps(String eps) {
-        this.eps = eps;
-    }
+    public Eps getEps() { return eps; }
+    public void setEps(Eps eps) { this.eps = eps; }
 
     public Date getFecha_registro() {
         return fecha_registro;

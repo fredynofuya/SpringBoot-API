@@ -22,7 +22,7 @@ public class CitaModel {
     private int id_paciente;
 
     @Column (name = "Id_Medico")
-    private int id_medico;
+    private Integer id_medico;
 
     @Transient
     private int id_especialidad;
@@ -44,7 +44,6 @@ public class CitaModel {
         CONFIRMADA,
         REPROGRAMADA,
         CANCELADA,
-        COMPLETADA,
         ATENDIDA
     }
 
@@ -159,11 +158,11 @@ public class CitaModel {
         this.id_paciente = id_paciente;
     }
 
-    public int getId_medico() {
+    public Integer getId_medico() {
         return id_medico;
     }
 
-    public void setId_medico(int id_medico) {
+    public void setId_medico(Integer id_medico) {
         this.id_medico = id_medico;
     }
 

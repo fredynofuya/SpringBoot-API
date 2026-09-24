@@ -17,7 +17,10 @@ public class MedicoModel {
     @Column (name = "Id_Especialidad")
     private int id_especialidad;
 
-    @Column (name = "registro_Profesional")
+    @Column (name = "Id_Consultorio")
+    private int id_consultorio;
+
+    @Column (name = "Registro_profesional")
     private  String registro_profesional;
 
     public int getId() {
@@ -43,6 +46,10 @@ public class MedicoModel {
     public void setId_especialidad(int id_especialidad) {
         this.id_especialidad = id_especialidad;
     }
+
+    public int getId_consultorio() { return id_consultorio; }
+
+    public void setId_consultorio(int id_consultorio) { this.id_consultorio = id_consultorio; }
 
     public String getRegistro_profesional() {
         return registro_profesional;
