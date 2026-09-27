@@ -5,11 +5,13 @@ import com.api.Citaya.models.PacienteModel;
 import com.api.Citaya.repositories.IPacienteRepository;
 import com.api.Citaya.services.CitaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +36,28 @@ public class CitaController {
         // actualiza en el momento de la creación de la cita
         @Autowired
         private IPacienteRepository pacienteRepository;
+
+        // Extraído a un método reutilizable: antes solo lo usaba get(), ahora lo usan
+        // también getByEstado() y getByMedicoYEstado() — así no se vuelve a olvidar
+        // enriquecer un endpoint nuevo con los datos del paciente.
+        private void enriquecerConDatosPaciente(List<CitaModel> citas) {
+            for (CitaModel cita : citas) {
+                Optional<PacienteModel> pacienteOpt = pacienteRepository.findById(cita.getId_paciente());
+
+                if (pacienteOpt.isPresent()) {
+                    PacienteModel paciente = pacienteOpt.get();
+                    cita.setNombre(paciente.getNombre());
+                    cita.setEmail(paciente.getEmail());
+                    cita.setTelefono(paciente.getTelefono());
+                    cita.setDocumento(paciente.getDocumento());
+                    cita.setTipo_documento(paciente.getTipo_documento() != null
+                            ? paciente.getTipo_documento().name() : null);
+                    cita.setEps(paciente.getEps() != null
+                            ? paciente.getEps().name() : null);
+                }
+            }
+        }
+
 
         // obtener todas las citas, devuelve una lista de citas
 //        @GetMapping
@@ -77,8 +101,28 @@ public class CitaController {
 
         @GetMapping("/estado/{estado}")
         public List<CitaModel> getByEstado(@PathVariable String estado) {
+            List<CitaModel> citas = citaService.getByEstado(estado);
+            enriquecerConDatosPaciente(citas);
+            return citas;
+        }
 
-        return citaService.getByEstado(estado);
+        // Nuevo: agenda de un médico específico, filtrada por estado (para la Agenda exclusiva)
+        @GetMapping("/medico/{idMedico}/estado/{estado}")
+        public List<CitaModel> getByMedicoYEstado(@PathVariable Integer idMedico, @PathVariable String estado) {
+            List<CitaModel> citas = citaService.getByMedicoYEstado(idMedico, estado);
+            enriquecerConDatosPaciente(citas);
+            return citas;
+        }
+
+    // Horas ya ocupadas de un médico en una fecha, para pintar el grid de disponibilidad
+    @GetMapping("/disponibilidad")
+    public List<String> getHorasOcupadas(
+            @RequestParam Integer idMedico,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+
+        return citaService.getHorasOcupadas(idMedico, fecha).stream()
+                .map(LocalTime::toString)
+                .toList();
     }
 
     // Convierte el texto de tipo_documento que llega en el request a la enum de PacienteModel.
@@ -171,57 +215,60 @@ public class CitaController {
         @PutMapping(path = "/{id}")
         public CitaModel put(@RequestBody CitaModel request, @PathVariable("id") int id) {
 
-            String documento = String.valueOf(request.getDocumento());
-            Optional <PacienteModel> optionalPaciente = pacienteRepository.findByDocumento(documento);
-            PacienteModel paciente;
+            // Validación de conflicto de horario (sin cambios)
+            if (request.getId_medico() != null && request.getFecha() != null && request.getHora() != null) {
+                boolean conflicto = citaService.existeConflictoHorario(
+                        request.getId_medico(), request.getFecha(), request.getHora(), id);
+                if (conflicto) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                            "El médico ya tiene una cita asignada en esa fecha y hora");
+                }
+            }
 
-            if (optionalPaciente.isPresent()) {
+            // Solo se toca el paciente si el request realmente trae su documento.
+            // El modal de asignación de médico/fecha/hora (Dashboard) NO manda documento,
+            // así que este bloque se salta y solo se actualiza la cita.
+            if (request.getDocumento() != null && !request.getDocumento().isBlank()) {
+
+                Optional<PacienteModel> optionalPaciente = pacienteRepository.findByDocumento(request.getDocumento());
+                PacienteModel paciente;
+
+                if (optionalPaciente.isPresent()) {
                     paciente = optionalPaciente.get();
-            } else {
+                } else {
                     paciente = new PacienteModel();
-                    paciente.setDocumento(documento);
+                    paciente.setDocumento(request.getDocumento());
+                }
+
+                var nombre = Optional.ofNullable(request.getNombre()).orElse(paciente.getNombre());
+                var email = Optional.ofNullable(request.getEmail()).orElse(paciente.getEmail());
+                var telefono = Optional.ofNullable(request.getTelefono()).orElse(paciente.getTelefono());
+
+                paciente.setNombre(nombre);
+                paciente.setEmail(email);
+                paciente.setTelefono(telefono);
+
+                PacienteModel.TipoDocumento tipoDoc = parseTipoDocumento(request.getTipo_documento());
+                if (tipoDoc != null) {
+                    paciente.setTipo_documento(tipoDoc);
+                }
+
+                PacienteModel.Eps eps = parseEps(request.getEps());
+                if (eps != null) {
+                    paciente.setEps(eps);
+                }
+
+                paciente = pacienteRepository.save(paciente);
+
+                request.setId_paciente(paciente.getId());
+                request.setNombre(paciente.getNombre());
+                request.setEmail(paciente.getEmail());
+                request.setTelefono(paciente.getTelefono());
+                request.setTipo_documento(paciente.getTipo_documento() != null
+                        ? paciente.getTipo_documento().name() : null);
+                request.setEps(paciente.getEps() != null
+                        ? paciente.getEps().name() : null);
             }
-
-            var nombre = Optional.ofNullable(request.getNombre())
-                    .orElse(paciente.getNombre());
-
-            var email = Optional.ofNullable(request.getEmail())
-                    .orElse(paciente.getEmail());
-
-            var telefono = Optional.ofNullable(request.getTelefono())
-                    .orElse(paciente.getTelefono());
-
-
-
-            // Actualizar datos
-            paciente.setNombre(nombre);
-            paciente.setEmail(email);
-            paciente.setTelefono(telefono);
-
-            // tipo_documento: solo se sobreescribe si llega un valor válido en el request
-            PacienteModel.TipoDocumento tipoDoc = parseTipoDocumento(request.getTipo_documento());
-            if (tipoDoc != null) {
-                paciente.setTipo_documento(tipoDoc);
-            }
-
-            // eps: solo se sobreescribe si llega un valor válido en el request
-            PacienteModel.Eps eps = parseEps(request.getEps());
-            if (eps != null) {
-                paciente.setEps(eps);
-            }
-
-            // Guardar paciente
-            paciente = pacienteRepository.save(paciente);
-            // Asignar a cita
-            request.setId_paciente(paciente.getId());
-            request.setNombre(paciente.getNombre());
-            request.setEmail(paciente.getEmail());
-            request.setTelefono(paciente.getTelefono());
-            request.setTipo_documento(paciente.getTipo_documento() != null
-                    ? paciente.getTipo_documento().name() : null);
-            request.setEps(paciente.getEps() != null
-                    ? paciente.getEps().name() : null);
-
 
             return this.citaService.putCita(request, id);
         }

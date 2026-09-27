@@ -20,6 +20,12 @@ public class MedicoModel {
     @Column (name = "Id_Consultorio")
     private int id_consultorio;
 
+    @Transient
+    private String nombreMedico;
+
+    @Transient
+    private String nombreConsultorio;
+
     @Column (name = "Registro_profesional")
     private  String registro_profesional;
 
@@ -50,6 +56,14 @@ public class MedicoModel {
     public int getId_consultorio() { return id_consultorio; }
 
     public void setId_consultorio(int id_consultorio) { this.id_consultorio = id_consultorio; }
+
+    public String getNombreMedico() { return nombreMedico; }
+
+    public void setNombreMedico(String nombreMedico) { this.nombreMedico = nombreMedico; }
+
+    public String getNombreConsultorio() { return nombreConsultorio; }
+
+    public void setNombreConsultorio(String nombreConsultorio) { this.nombreConsultorio = nombreConsultorio; }
 
     public String getRegistro_profesional() {
         return registro_profesional;
