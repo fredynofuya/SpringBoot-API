@@ -3,7 +3,9 @@ package com.api.Citaya.controllers;
 import com.api.Citaya.models.PacienteModel;
 import com.api.Citaya.services.PacienteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -40,6 +42,11 @@ public class PacienteController {
     //Crear un nuevo paciente, devuelve el paciente creado
     @PostMapping
     public PacienteModel post(@RequestBody PacienteModel paciente) {
+        if (paciente.getDocumento() != null
+                && pacienteService.getByDocumento(paciente.getDocumento()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ya existe un paciente con ese documento");
+        }
         return this.pacienteService.postPaciente(paciente);
     }
 

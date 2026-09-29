@@ -156,6 +156,14 @@ public class CitaController {
         // se actualiza en el momento de la creación de la cita
         @PostMapping
         public CitaModel post(@RequestBody CitaModel cita) {
+            // Validación de conflicto de horario: si el request trae id_medico, fecha y hora, se valida que no haya
+            // otra cita con el mismo id_medico, fecha y hora (distinta de la cita que se está creando, que aún no tiene id)
+            if (cita.getId_medico() != null && cita.getFecha() != null && cita.getHora() != null
+                    && citaService.existeConflictoHorario(cita.getId_medico(), cita.getFecha(), cita.getHora(), 0)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "El médico ya tiene una cita asignada en esa fecha y hora");
+            }
+
             // Obtener el paciente por documento, si el paciente no existe, se crea un nuevo paciente con los datos de la cita,
             // si el paciente existe,
             // se actualizan los datos del paciente con los datos de la cita
