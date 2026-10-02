@@ -43,7 +43,10 @@ public class MedicoController {
 
             Optional<com.api.Citaya.models.ConsultorioModel> consultorio =
                     consultorioRepository.findById(medico.getId_consultorio());
-            consultorio.ifPresent(c -> medico.setNombreConsultorio(c.getNombre()));
+            consultorio.ifPresent(c ->
+                    medico.setNombreConsultorio(c.getNombre()));
+            consultorio.ifPresent(c ->
+                    medico.setUbicacionConsultorio(c.getUbicacion()));
         }
 
         return medicos;

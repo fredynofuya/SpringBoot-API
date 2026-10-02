@@ -33,6 +33,15 @@ public class CitaModel {
     @Transient
     private int id_documento;
 
+    @Transient
+    private String nombreMedico;
+
+    @Transient
+    private String nombreConsultorio;
+
+    @Transient
+    private String ubicacionConsultorio;
+
     @Column (name = "Fecha")
     private LocalDate fecha;
 
@@ -189,6 +198,18 @@ public class CitaModel {
     public void setId_documento(int id_documento) {
         this.id_documento = id_documento;
     }
+
+    public String getNombreMedico() { return nombreMedico; }
+
+    public void setNombreMedico(String nombreMedico) { this.nombreMedico = nombreMedico; }
+
+    public String getNombreConsultorio() { return nombreConsultorio; }
+
+    public void setNombreConsultorio(String nombreConsultorio) { this.nombreConsultorio = nombreConsultorio; }
+
+    public String getUbicacionConsultorio() { return ubicacionConsultorio; }
+
+    public void setUbicacionConsultorio(String ubicacionConsultorio) { this.ubicacionConsultorio = ubicacionConsultorio; }
 
     public LocalDate getFecha() {
         return fecha;
