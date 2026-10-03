@@ -51,8 +51,16 @@ public class PacienteController {
     }
 
     //Actualizar un paciente por id, devuelve el paciente actualizado
+    //Actualizar un paciente por id, devuelve el paciente actualizado
     @PutMapping(path = "/{id}")
     public PacienteModel put(@RequestBody PacienteModel request, @PathVariable("id") int id) {
+        if (request.getDocumento() != null) {
+            Optional<PacienteModel> existente = pacienteService.getByDocumento(request.getDocumento());
+            if (existente.isPresent() && existente.get().getId() != id) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Ya existe otro paciente con ese documento");
+            }
+        }
         return this.pacienteService.putPaciente(request, id);
     }
 
