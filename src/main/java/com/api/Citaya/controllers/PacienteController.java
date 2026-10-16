@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -41,6 +42,7 @@ public class PacienteController {
 
     //Crear un nuevo paciente, devuelve el paciente creado
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public PacienteModel post(@RequestBody PacienteModel paciente) {
         if (paciente.getDocumento() != null
                 && pacienteService.getByDocumento(paciente.getDocumento()).isPresent()) {
@@ -51,8 +53,8 @@ public class PacienteController {
     }
 
     //Actualizar un paciente por id, devuelve el paciente actualizado
-    //Actualizar un paciente por id, devuelve el paciente actualizado
     @PutMapping(path = "/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public PacienteModel put(@RequestBody PacienteModel request, @PathVariable("id") int id) {
         if (request.getDocumento() != null) {
             Optional<PacienteModel> existente = pacienteService.getByDocumento(request.getDocumento());
@@ -66,6 +68,7 @@ public class PacienteController {
 
     //Elimnar un paciente por id, devuelve un mensaje indicando si se eliminó o no el paciente
     @DeleteMapping(path = "/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public String delete(@PathVariable("id") int id) {
         boolean ok= this.pacienteService.deletePaciente(id);
         return ok? "Se eliminó el paciente con id " + id : "No se pudo eliminar el paciente con id " + id;

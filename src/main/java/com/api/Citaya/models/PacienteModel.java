@@ -1,6 +1,10 @@
 package com.api.Citaya.models;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 
 // La anotación @Entity se utiliza para indicar que esta clase es una entidad de JPA (Java Persistence API) y se mapeará a una tabla en la base de datos.
@@ -43,8 +47,14 @@ public class PacienteModel {
     @Enumerated(EnumType.STRING)
     private Eps eps;
 
-    @Column (name = "Fecha_Registro")
-    private Date fecha_registro;
+    @CreationTimestamp
+    @Column(name = "Fecha_Registro", updatable = false)
+    private LocalDateTime fecha_registro;
+
+
+    @UpdateTimestamp
+    @Column(name = "Fecha_Actualizacion")
+    private LocalDateTime fecha_actualizacion;
 
     public int getId() {
         return id;
@@ -97,11 +107,19 @@ public class PacienteModel {
     public Eps getEps() { return eps; }
     public void setEps(Eps eps) { this.eps = eps; }
 
-    public Date getFecha_registro() {
+    public LocalDateTime getFecha_registro() {
         return fecha_registro;
     }
 
-    public void setFecha_registro(Date fecha_registro) {
+    public void setFecha_registro(LocalDateTime fecha_registro) {
         this.fecha_registro = fecha_registro;
+    }
+
+    public LocalDateTime getFecha_actualizacion() {
+        return fecha_actualizacion;
+    }
+
+    public void setFecha_actualizacion(LocalDateTime fecha_actualizacion) {
+        this.fecha_actualizacion = fecha_actualizacion;
     }
 }

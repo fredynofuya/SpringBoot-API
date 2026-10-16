@@ -5,6 +5,7 @@ import com.api.Citaya.repositories.IPacienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
@@ -58,7 +59,7 @@ public class PacienteService {
         pacienteModel.setTelefono(request.getTelefono() != null ? request.getTelefono() : pacienteModel.getTelefono());
         pacienteModel.setEps(request.getEps() != null ? request.getEps() : pacienteModel.getEps());
         //El campo fecha_registro se actualiza con la fecha actual, ya que se asume que el paciente se actualiza en el momento de la actualización
-        pacienteModel.setFecha_registro(new Date());
+        pacienteModel.setFecha_actualizacion(LocalDateTime.now());
         //Guardamos el paciente actualizado en la base de datos y lo devolvemos
         return pacienteRepository.save(pacienteModel);
     }

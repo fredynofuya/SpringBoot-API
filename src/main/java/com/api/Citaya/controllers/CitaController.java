@@ -402,6 +402,7 @@ public class CitaController {
                         ? paciente.getTipo_documento().name() : null);
                 cita.setEps(paciente.getEps() != null
                         ? paciente.getEps().name() : null);
+                cita.setFecha_registro(paciente.getFecha_registro());
             }
         }
     }
@@ -458,6 +459,9 @@ public class CitaController {
     // Obtener una cita por id
     @GetMapping(path = "/{id}")
     public Optional<CitaModel> getCitaById(@PathVariable("id") int id) {
+        ArrayList<CitaModel> citas = citaService.getCita();
+        enriquecerConDatosPaciente(citas);
+        enriquecerConDatosMedico(citas);
         return this.citaService.getById(id);
     }
 

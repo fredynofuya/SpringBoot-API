@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,7 +82,7 @@ public class CitaService {
         citaModel.setHora(request.getHora() != null ? request.getHora() : citaModel.getHora());
         citaModel.setEstado(request.getEstado() != null ? request.getEstado() : citaModel.getEstado());
         citaModel.setId_medico(request.getId_medico() != null ? request.getId_medico() : citaModel.getId_medico());
-        citaModel.setMensaje(request.getMensaje() != null ? request.getMensaje() : citaModel.getMensaje());
+        citaModel.setMotivo(request.getMotivo() != null ? request.getMotivo() : citaModel.getMotivo());
         citaModel.setObservaciones(request.getObservaciones() != null ? request.getObservaciones() : citaModel.getObservaciones());
         // Los campos relacionados con el paciente se actualizan con los datos del request, si el campo del request es null,
         // se mantiene el valor original de la cita
@@ -90,6 +91,8 @@ public class CitaService {
         citaModel.setEmail(request.getEmail() != null ? request.getEmail() : citaModel.getEmail());
         citaModel.setTelefono(request.getTelefono() != null ? request.getTelefono() : citaModel.getTelefono());
         citaModel.setEps(request.getEps() != null ? request.getEps() : citaModel.getEps());
+        // Guardamos la cita actualizada en la base de datos y la devolvemos
+        citaModel.setFecha_actualizacion(LocalDateTime.now());
 
         return citaRepository.save(citaModel);
     }

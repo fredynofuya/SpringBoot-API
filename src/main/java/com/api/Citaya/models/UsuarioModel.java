@@ -1,9 +1,8 @@
 package com.api.Citaya.models;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
-// Modelo mínimo de solo lectura. No incluye password/rol todavía porque el módulo
-// de autenticación no está implementado (ver riesgos del documento de diseño del proyecto).
 @Entity
 @Table(name = "Usuarios")
 public class UsuarioModel {
@@ -16,10 +15,44 @@ public class UsuarioModel {
     @Column(name = "Nombre")
     private String nombre;
 
+    @Column(name = "Email", unique = true)
+    private String email;
+
+    // Siempre almacena el hash (BCrypt), nunca texto plano.
+    @Column(name = "Password")
+    private String password;
+
+    public enum Rol { ADMIN, MEDICO }
+
+    @Column(name = "Rol")
+    @Enumerated(EnumType.STRING)
+    private Rol rol;
+
+    @Column(name = "Activo")
+    private Boolean activo = true;
+
+    @Column(name = "Fecha_Creacion")
+    private LocalDateTime fecha_creacion;
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    public Rol getRol() { return rol; }
+    public void setRol(Rol rol) { this.rol = rol; }
+
+    public Boolean getActivo() { return activo; }
+    public void setActivo(Boolean activo) { this.activo = activo; }
+
+    public LocalDateTime getFecha_creacion() { return fecha_creacion; }
+    public void setFecha_creacion(LocalDateTime fecha_creacion) { this.fecha_creacion = fecha_creacion; }
 }
 

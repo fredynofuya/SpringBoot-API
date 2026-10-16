@@ -29,6 +29,12 @@ public class MedicoModel {
     @Transient
     private String ubicacionConsultorio;
 
+    @Transient
+    private String emailMedico;
+
+    @Transient
+    private Boolean activoMedico;
+
     @Column (name = "Registro_profesional")
     private  String registro_profesional;
 
@@ -71,6 +77,14 @@ public class MedicoModel {
     public String getUbicacionConsultorio() { return ubicacionConsultorio; }
 
     public void setUbicacionConsultorio(String ubicacionConsultorio) { this.ubicacionConsultorio = ubicacionConsultorio; }
+
+    public String getEmailMedico() { return emailMedico; }
+
+    public void setEmailMedico(String emailMedico) { this.emailMedico = emailMedico; }
+
+    public Boolean getActivoMedico() { return activoMedico; }
+
+    public void setActivoMedico(Boolean activoMedico) { this.activoMedico = activoMedico; }
 
     public String getRegistro_profesional() {
         return registro_profesional;

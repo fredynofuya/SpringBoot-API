@@ -51,7 +51,6 @@ public class CitaModel {
     public enum Estado {
         SOLICITADA,
         CONFIRMADA,
-        REPROGRAMADA,
         CANCELADA,
         ATENDIDA
     }
@@ -61,7 +60,7 @@ public class CitaModel {
     private Estado estado = Estado.SOLICITADA;
 
     @Column (name = "Motivo")
-    private String mensaje;
+    private String motivo;
 
     @Column (name = "Observaciones")
     private String observaciones;
@@ -146,10 +145,9 @@ public class CitaModel {
     public LocalDateTime getFecha_registro() {
         return fecha_registro;
     }
-
     public void setFecha_registro(LocalDateTime fecha_registro) {
-        this.fecha_registro = fecha_registro;
-    }
+            this.fecha_registro = fecha_registro;
+        }
 
     public int getId() {
         return id;
@@ -243,13 +241,9 @@ public class CitaModel {
         this.observaciones = observaciones;
     }
 
-    public String getMensaje() {
-        return mensaje;
-    }
+    public String getMotivo() { return motivo; }
 
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
-    }
+    public void setMotivo(String motivo) { this.motivo = motivo; }
 
     public LocalDateTime getFecha_creacion() {
         return fecha_creacion;
