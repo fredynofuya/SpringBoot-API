@@ -352,6 +352,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.api.Citaya.security.SesionActual;
+import com.api.Citaya.security.SoloAdministracion;
+
 
 // Permite solicitudes de cualquier origen, lo que es útil para el desarrollo y pruebas, pero se debe configurar
 // adecuadamente en producción para evitar problemas de seguridad
@@ -361,6 +364,9 @@ import java.util.stream.Collectors;
 // Mapea las solicitudes a "/cita"
 @RequestMapping ("/cita")
 public class CitaController {
+
+    @Autowired
+    private SesionActual sesion;
 
     @Autowired
     private IMedicoRepository medicoRepository;
@@ -384,6 +390,43 @@ public class CitaController {
     // actualiza en el momento de la creación de la cita
     @Autowired
     private IPacienteRepository pacienteRepository;
+
+    // Verifica que el usuario autenticado tenga acceso a las citas de un médico específico.
+    // Lanza 401 si no está autenticado, 403 si no es administración ni el médico correspondiente.
+    // Se usa en getByMedicoYEstado() y podría usarse en otros
+    private void exigirAccesoAMedico(Integer idMedico) {
+        if (!sesion.estaAutenticado()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sesión requerida");
+        }
+        if (sesion.esAdministracion()) return;
+
+        boolean propio = sesion.esMedico() && idMedico != null
+                && sesion.idMedicoActual().map(id -> id.equals(idMedico)).orElse(false);
+        if (!propio) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a las citas de otro médico");
+        }
+    }
+
+    // Actualiza el estado de una cita, solo permite que un médico marque sus propias citas como atendidas o confirmadas.
+    // Lanza 401 si no está autenticado, 403 si no es administración ni el médico correspondiente, 404 si la cita no existe,
+    // 403 si intenta cambiar a un estado
+    private CitaModel actualizarEstadoComoMedico(CitaModel request, int id) {
+        CitaModel cita = citaService.getById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cita no encontrada"));
+        exigirAccesoAMedico(cita.getId_medico());
+
+        CitaModel.Estado nuevo = request.getEstado();
+        boolean permitido = (nuevo == CitaModel.Estado.ATENDIDA || nuevo == CitaModel.Estado.CONFIRMADA)
+                && (cita.getEstado() == CitaModel.Estado.CONFIRMADA || cita.getEstado() == CitaModel.Estado.ATENDIDA);
+        if (!permitido) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Solo puedes marcar tus citas como atendidas o confirmadas");
+        }
+
+        CitaModel soloEstado = new CitaModel();   // se ignora cualquier otro campo del body
+        soloEstado.setEstado(nuevo);
+        return citaService.putCita(soloEstado, id);
+    }
 
     // Extraído a un método reutilizable: antes solo lo usaba get(), ahora lo usan
     // también getByEstado() y getByMedicoYEstado() — así no se vuelve a olvidar
@@ -449,6 +492,7 @@ public class CitaController {
 
     // obtener todas las citas, devuelve una lista de citas
     @GetMapping
+    @SoloAdministracion
     public ArrayList<CitaModel> get() {
         ArrayList<CitaModel> citas = citaService.getCita();
         enriquecerConDatosPaciente(citas);
@@ -456,16 +500,22 @@ public class CitaController {
         return citas;
     }
 
-    // Obtener una cita por id
+    // Obtener una cita por id, devuelve la cita con los datos del paciente y del médico
     @GetMapping(path = "/{id}")
-    public Optional<CitaModel> getCitaById(@PathVariable("id") int id) {
-        ArrayList<CitaModel> citas = citaService.getCita();
-        enriquecerConDatosPaciente(citas);
-        enriquecerConDatosMedico(citas);
-        return this.citaService.getById(id);
+    @SoloAdministracion
+    public CitaModel getCitaById(@PathVariable("id") int id) {
+        CitaModel cita = citaService.getById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cita no encontrada"));
+        exigirAccesoAMedico(cita.getId_medico());
+        List<CitaModel> unica = List.of(cita);
+        enriquecerConDatosPaciente(unica);
+        enriquecerConDatosMedico(unica);
+        return cita;
     }
 
     @GetMapping("/estado/{estado}")
+    // Devuelve todas las citas con un estado específico, enriquecidas con los datos del paciente y del médico
+    @SoloAdministracion
     public List<CitaModel> getByEstado(@PathVariable String estado) {
         List<CitaModel> citas = citaService.getByEstado(estado);
         enriquecerConDatosPaciente(citas);
@@ -484,6 +534,7 @@ public class CitaController {
 
     // Horas ya ocupadas de un médico en una fecha, para pintar el grid de disponibilidad
     @GetMapping("/disponibilidad")
+    @SoloAdministracion
     public List<String> getHorasOcupadas(
             @RequestParam Integer idMedico,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
@@ -523,6 +574,18 @@ public class CitaController {
     // se actualiza en el momento de la creación de la cita
     @PostMapping
     public CitaModel post(@RequestBody CitaModel cita) {
+
+        boolean esPersonal = sesion.esAdministracion();
+        cita.setId(0); // un id enviado en el body no puede pisar una cita existente
+        if (!esPersonal) {
+            // Solicitud pública: no confirma, no asigna médico/horario ni deja observaciones
+            cita.setEstado(CitaModel.Estado.SOLICITADA);
+            cita.setId_medico(null);
+            cita.setFecha(null);
+            cita.setHora(null);
+            cita.setObservaciones(null);
+        }
+
         // Validación de conflicto de horario: si el request trae id_medico, fecha y hora, se valida que no haya
         // otra cita con el mismo id_medico, fecha y hora (distinta de la cita que se está creando, que aún no tiene id)
         if (cita.getId_medico() != null && cita.getFecha() != null && cita.getHora() != null
@@ -551,20 +614,29 @@ public class CitaController {
         paciente.setEmail(cita.getEmail());
         paciente.setTelefono(cita.getTelefono());
 
-        PacienteModel.TipoDocumento tipoDoc = parseTipoDocumento(cita.getTipo_documento());
-        if (tipoDoc != null) {
-            paciente.setTipo_documento(tipoDoc);
-        } else if (paciente.getTipo_documento() == null) {
-            // Es NOT NULL en la BD: si es paciente nuevo y no llegó el dato, falla explícito en vez de dejar que MySQL lo haga
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tipo_documento es obligatorio");
-        }
+        // Si es personal administrativo o si es paciente nuevo, se actualizan los datos del paciente
+        boolean pacienteNuevo = optionalPaciente.isEmpty();
+        if (esPersonal || pacienteNuevo) {
+            paciente.setNombre(cita.getNombre());
+            paciente.setEmail(cita.getEmail());
+            paciente.setTelefono(cita.getTelefono());
 
-        // eps es NOT NULL en la BD: validar y asignar
-        PacienteModel.Eps eps = parseEps(cita.getEps());
-        if (eps != null) {
-            paciente.setEps(eps);
-        } else if (paciente.getEps() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "eps es obligatoria");
+            PacienteModel.TipoDocumento tipoDoc = parseTipoDocumento(cita.getTipo_documento());
+            if (tipoDoc != null) {
+                paciente.setTipo_documento(tipoDoc);
+            } else if (paciente.getTipo_documento() == null) {
+                // Es NOT NULL en la BD: si es paciente nuevo y no llegó el dato, falla explícito en vez de dejar que MySQL lo haga
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tipo_documento es obligatorio");
+            }
+
+            // eps es NOT NULL en la BD: validar y asignar
+            PacienteModel.Eps eps = parseEps(cita.getEps());
+            if (eps != null) {
+                paciente.setEps(eps);
+            } else if (paciente.getEps() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "eps es obligatoria");
+            }
+
         }
 
         // Guardar paciente
@@ -586,7 +658,16 @@ public class CitaController {
     // Actualizar una cita por id, devuelve la cita actualizada
     @PutMapping(path = "/{id}")
     public CitaModel put(@RequestBody CitaModel request, @PathVariable("id") int id) {
+        if (!sesion.estaAutenticado()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sesión requerida");
+        }
+        if (sesion.esMedico()) return actualizarEstadoComoMedico(request, id);
+        if (sesion.esAdministracion()) return putAdministracion(request, id);
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                "No tienes permisos para realizar esta acción");
+    }
 
+    private CitaModel putAdministracion(CitaModel request, int id) {
         // Validación de conflicto de horario (sin cambios)
         if (request.getId_medico() != null && request.getFecha() != null && request.getHora() != null) {
             boolean conflicto = citaService.existeConflictoHorario(
@@ -647,6 +728,7 @@ public class CitaController {
 
     // Eliminar una cita por id, devuelve un mensaje indicando si se eliminó o no la cita
     @DeleteMapping(path = "/{id}")
+    @SoloAdministracion
     public String delete(@PathVariable("id") int id) {
         boolean ok= this.citaService.deleteCita(id);
         return ok? "Se eliminó la cita con id " + id : "No se pudo eliminar la cita con id " + id;

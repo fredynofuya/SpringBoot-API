@@ -2,6 +2,7 @@ package com.api.Citaya.models;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "Usuarios")
@@ -22,7 +23,7 @@ public class UsuarioModel {
     @Column(name = "Password")
     private String password;
 
-    public enum Rol { ADMIN, MEDICO }
+    public enum Rol { SUPER_ADMIN, ADMIN, MEDICO }
 
     @Column(name = "Rol")
     @Enumerated(EnumType.STRING)
@@ -31,7 +32,8 @@ public class UsuarioModel {
     @Column(name = "Activo")
     private Boolean activo = true;
 
-    @Column(name = "Fecha_Creacion")
+    @CreationTimestamp
+    @Column(name = "Fecha_Creacion", updatable = false)
     private LocalDateTime fecha_creacion;
 
     public int getId() { return id; }
