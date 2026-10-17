@@ -29,10 +29,10 @@ La aplicación usa `DB_URL` para la conexión JDBC (no `URL`, que puede estar si
 Configura el secreto JWT (de al menos 32 bytes) y, si corresponde, las credenciales de MySQL:
 
 ```sh
-export JWT_SECRET=tu_secreto_jwt_de_al_menos_32_bytes
-export USER_NAME=tu_usuario
-export PASSWORD=tu_contraseña
-export DB_URL='jdbc:mysql://localhost:3306/citaya?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true'
+JWT_SECRET=tu_secreto_jwt_de_al_menos_32_bytes
+USER_NAME=tu_usuario
+PASSWORD=tu_contraseña
+DB_URL='jdbc:mysql://localhost:3306/citaya?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true'
 ```
 
 `PORT` es opcional y usa `8080` por defecto. `JWT_EXPIRATION_MS` también es opcional y usa `86400000` (24 horas). Las variables exportadas deben estar definidas en la misma terminal desde la que se inicia Maven.
