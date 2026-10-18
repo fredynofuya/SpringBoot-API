@@ -506,7 +506,6 @@ public class CitaController {
     public CitaModel getCitaById(@PathVariable("id") int id) {
         CitaModel cita = citaService.getById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cita no encontrada"));
-        exigirAccesoAMedico(cita.getId_medico());
         List<CitaModel> unica = List.of(cita);
         enriquecerConDatosPaciente(unica);
         enriquecerConDatosMedico(unica);
@@ -609,10 +608,10 @@ public class CitaController {
             paciente.setDocumento(documento);
         }
 
-        // Actualizar datos
-        paciente.setNombre(cita.getNombre());
-        paciente.setEmail(cita.getEmail());
-        paciente.setTelefono(cita.getTelefono());
+//        // Actualizar datos
+//        paciente.setNombre(cita.getNombre());
+//        paciente.setEmail(cita.getEmail());
+//        paciente.setTelefono(cita.getTelefono());
 
         // Si es personal administrativo o si es paciente nuevo, se actualizan los datos del paciente
         boolean pacienteNuevo = optionalPaciente.isEmpty();
