@@ -525,6 +525,7 @@ public class CitaController {
     // Nuevo: agenda de un médico específico, filtrada por estado (para la Agenda exclusiva)
     @GetMapping("/medico/{idMedico}/estado/{estado}")
     public List<CitaModel> getByMedicoYEstado(@PathVariable Integer idMedico, @PathVariable String estado) {
+        exigirAccesoAMedico(idMedico);
         List<CitaModel> citas = citaService.getByMedicoYEstado(idMedico, estado);
         enriquecerConDatosPaciente(citas);
         enriquecerConDatosMedico(citas);

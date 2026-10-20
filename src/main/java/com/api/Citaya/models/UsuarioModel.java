@@ -36,6 +36,9 @@ public class UsuarioModel {
     @Column(name = "Fecha_Creacion", updatable = false)
     private LocalDateTime fecha_creacion;
 
+    @Column(name = "Version_Token")
+    private Integer versionToken = 0;
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -56,5 +59,8 @@ public class UsuarioModel {
 
     public LocalDateTime getFecha_creacion() { return fecha_creacion; }
     public void setFecha_creacion(LocalDateTime fecha_creacion) { this.fecha_creacion = fecha_creacion; }
+
+    public int getVersionToken() { return versionToken == null ? 0 : versionToken; }
+    public void setVersionToken(int versionToken) { this.versionToken = versionToken; }
 }
 

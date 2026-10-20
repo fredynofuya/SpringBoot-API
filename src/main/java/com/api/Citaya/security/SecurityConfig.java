@@ -75,6 +75,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/recuperar/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/cita").permitAll() // solicitud pública del formulario
                         .anyRequest().authenticated()
                 )

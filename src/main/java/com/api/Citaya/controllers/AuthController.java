@@ -15,10 +15,20 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.api.Citaya.dto.PasswordDTO;
+import com.api.Citaya.security.SesionActual;
+import com.api.Citaya.services.PasswordService;
+
 @CrossOrigin("*")
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    @Autowired
+    private SesionActual sesion;
+
+    @Autowired
+    private PasswordService passwordService;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -56,7 +66,7 @@ public class AuthController {
         UsuarioModel usuario = usuarioRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Correo o contraseña incorrectos"));
 
-        String token = jwtService.generarToken(usuario.getEmail(), usuario.getRol().name());
+        String token = jwtService.generarToken(usuario.getEmail(), usuario.getRol().name(), usuario.getVersionToken());
 
         return construirRespuesta(token, usuario);
     }
@@ -79,6 +89,18 @@ public class AuthController {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED, "Token inválido"));
 
+        return construirRespuesta(token, usuario);
+    }
+
+    @PutMapping("/password")
+    public LoginResponse cambiarPassword(@RequestBody PasswordDTO.Cambio request) {
+        int idUsuario = sesion.idUsuarioActual()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sesión requerida"));
+
+        UsuarioModel usuario = passwordService.cambiar(idUsuario, request.passwordActual(), request.passwordNueva());
+
+        // Token nuevo para que ESTA sesión continúe; todas las demás quedan invalidadas.
+        String token = jwtService.generarToken(usuario.getEmail(), usuario.getRol().name(), usuario.getVersionToken());
         return construirRespuesta(token, usuario);
     }
 

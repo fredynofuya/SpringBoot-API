@@ -10,6 +10,10 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import org.springframework.web.server.ResponseStatusException;
+import java.util.HashMap;
+import java.util.Map;
+
 @RestControllerAdvice
 public class JwtExceptionHandler {
 
@@ -27,6 +31,14 @@ public class JwtExceptionHandler {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Sesión expirada o no autenticada");
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tienes permisos para realizar esta acción");
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", ex.getStatusCode().value());
+        body.put("message", ex.getReason());
+        return ResponseEntity.status(ex.getStatusCode()).body(body);
     }
 
 //    @ExceptionHandler(AccessDeniedException.class)

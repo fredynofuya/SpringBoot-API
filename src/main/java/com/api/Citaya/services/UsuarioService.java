@@ -3,6 +3,7 @@ package com.api.Citaya.services;
 import com.api.Citaya.dto.*;
 import com.api.Citaya.models.UsuarioModel;
 import com.api.Citaya.repositories.IUsuarioRepository;
+import com.api.Citaya.security.PoliticaPassword;
 import com.api.Citaya.security.SesionActual;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,9 +37,10 @@ public class UsuarioService {
 
     public UsuarioResumenDTO crear(UsuarioRegistroDTO dto) {
         validarNombreYEmail(dto.getNombre(), dto.getEmail());
-        if (dto.getPassword() == null || dto.getPassword().length() < 8) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La contraseña debe tener al menos 8 caracteres");
-        }
+//        if (dto.getPassword() == null || dto.getPassword().length() < 8) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La contraseña debe tener al menos 8 caracteres");
+//        }
+        PoliticaPassword.validar(dto.getPassword());
         if (usuarioRepository.findByEmail(dto.getEmail().trim()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un usuario con ese correo");
         }

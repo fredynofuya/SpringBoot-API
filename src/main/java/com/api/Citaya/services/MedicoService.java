@@ -8,6 +8,7 @@ import com.api.Citaya.repositories.IConsultorioRepository;
 import com.api.Citaya.repositories.IEspecialidadRepository;
 import com.api.Citaya.repositories.IMedicoRepository;
 import com.api.Citaya.repositories.IUsuarioRepository;
+import com.api.Citaya.security.PoliticaPassword;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.nio.charset.StandardCharsets;
+//import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -28,8 +29,8 @@ public class MedicoService {
     private static final int MAX_REGISTRO = 50;
 
     // Política de contraseña: mismo mínimo que la sección Usuarios. BCrypt solo procesa 72 bytes.
-    private static final int MIN_PASSWORD = 8;
-    private static final int MAX_PASSWORD_BYTES = 72;
+    //private static final int MIN_PASSWORD = 8;
+    //private static final int MAX_PASSWORD_BYTES = 72;
 
     private static final String EMAIL_REGEX = "^\\S+@\\S+\\.\\S+$";
 
@@ -63,7 +64,8 @@ public class MedicoService {
         String nombre = textoObligatorio(dto.getNombre(), "El nombre", MAX_NOMBRE);
         String email = emailValido(dto.getEmail());
         String registro = textoObligatorio(dto.getRegistro_profesional(), "El registro profesional", MAX_REGISTRO);
-        validarPassword(dto.getPassword());
+        PoliticaPassword.validar(dto.getPassword());
+//        validarPassword(dto.getPassword());
 
         if (usuarioRepository.findByEmail(email).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe un usuario con ese correo");
@@ -171,13 +173,13 @@ public class MedicoService {
         return limpio;
     }
 
-    private void validarPassword(String password) {
-        if (password == null || password.length() < MIN_PASSWORD) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "La contraseña debe tener al menos " + MIN_PASSWORD + " caracteres");
-        }
-        if (password.getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La contraseña es demasiado larga");
-        }
-    }
+//    private void validarPassword(String password) {
+//        if (password == null || password.length() < MIN_PASSWORD) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+//                    "La contraseña debe tener al menos " + MIN_PASSWORD + " caracteres");
+//        }
+//        if (password.getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La contraseña es demasiado larga");
+//        }
+//    }
 }
