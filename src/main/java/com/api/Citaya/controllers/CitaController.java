@@ -355,6 +355,9 @@ import java.util.stream.Collectors;
 import com.api.Citaya.security.SesionActual;
 import com.api.Citaya.security.SoloAdministracion;
 
+import com.api.Citaya.services.NotificacionService;
+import java.time.LocalDateTime;
+
 
 // Permite solicitudes de cualquier origen, lo que es útil para el desarrollo y pruebas, pero se debe configurar
 // adecuadamente en producción para evitar problemas de seguridad
@@ -364,6 +367,9 @@ import com.api.Citaya.security.SoloAdministracion;
 // Mapea las solicitudes a "/cita"
 @RequestMapping ("/cita")
 public class CitaController {
+
+    @Autowired
+    private NotificacionService notificaciones;
 
     @Autowired
     private SesionActual sesion;
@@ -578,6 +584,10 @@ public class CitaController {
         boolean esPersonal = sesion.esAdministracion();
         cita.setId(0); // un id enviado en el body no puede pisar una cita existente
         if (!esPersonal) {
+            if (!Boolean.TRUE.equals(cita.getAcepta_notificaciones())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Debes aceptar la autorización de tratamiento de datos para enviar la solicitud");
+            }
             // Solicitud pública: no confirma, no asigna médico/horario ni deja observaciones
             cita.setEstado(CitaModel.Estado.SOLICITADA);
             cita.setId_medico(null);
@@ -637,6 +647,12 @@ public class CitaController {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "eps es obligatoria");
             }
 
+            if (pacienteNuevo) { // el consentimiento solo se registra al crear; a un paciente existente no se le cambia desde aquí
+                boolean acepta = Boolean.TRUE.equals(cita.getAcepta_notificaciones());
+                paciente.setAcepta_notificaciones(acepta);
+                paciente.setFecha_consentimiento(acepta ? LocalDateTime.now() : null);
+            }
+
         }
 
         // Guardar paciente
@@ -652,7 +668,9 @@ public class CitaController {
         cita.setEps(paciente.getEps() != null
                 ? paciente.getEps().name() : null);
 
-        return citaService.postCita(cita);
+        CitaModel guardada = citaService.postCita(cita);
+        notificaciones.procesarCambio(null, guardada);
+        return guardada;
     }
 
     // Actualizar una cita por id, devuelve la cita actualizada
@@ -668,6 +686,10 @@ public class CitaController {
     }
 
     private CitaModel putAdministracion(CitaModel request, int id) {
+        CitaModel actual = citaService.getById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cita no encontrada"));
+        NotificacionService.EstadoCita antes = NotificacionService.EstadoCita.de(actual);
+
         // Validación de conflicto de horario (sin cambios)
         if (request.getId_medico() != null && request.getFecha() != null && request.getHora() != null) {
             boolean conflicto = citaService.existeConflictoHorario(
@@ -723,7 +745,9 @@ public class CitaController {
                     ? paciente.getEps().name() : null);
         }
 
-        return this.citaService.putCita(request, id);
+        CitaModel guardada = this.citaService.putCita(request, id);
+        notificaciones.procesarCambio(antes, guardada);
+        return guardada;
     }
 
     // Eliminar una cita por id, devuelve un mensaje indicando si se eliminó o no la cita

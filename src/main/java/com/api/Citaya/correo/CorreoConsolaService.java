@@ -5,7 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-// SOLO DESARROLLO: escribe el enlace en el log en vez de enviar un correo.
+import java.util.concurrent.CompletableFuture;
+
+// SOLO DESARROLLO: escribe el contenido en el log en vez de enviar un correo.
+// No usar con datos reales: el mensaje puede contener datos de la cita.
 @Service
 @ConditionalOnProperty(name = "app.correo.modo", havingValue = "consola")
 public class CorreoConsolaService implements EmailService {
@@ -16,5 +19,11 @@ public class CorreoConsolaService implements EmailService {
     public void enviarRecuperacion(String destinatario, String nombre, String enlace, int minutosVigencia) {
         log.warn("[MODO CONSOLA - solo desarrollo] Enlace de recuperación para {} (vence en {} min): {}",
                 destinatario, minutosVigencia, enlace);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> enviar(String destinatario, String asunto, String texto, String html) {
+        log.warn("[MODO CONSOLA - solo desarrollo] Correo para {} | Asunto: {}\n{}", destinatario, asunto, texto);
+        return CompletableFuture.completedFuture(true);
     }
 }

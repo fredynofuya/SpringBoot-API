@@ -39,6 +39,13 @@ public class PacienteModel {
     @Column (name = "Telefono")
     private String telefono;
 
+    @Column(name = "Acepta_Notificaciones")
+    private Boolean acepta_notificaciones = false;
+
+    @Column(name = "Fecha_Consentimiento")
+    private LocalDateTime fecha_consentimiento;
+
+
     public enum Eps {
         SURA, SANITAS, SAVIASALUD
     }
@@ -122,4 +129,12 @@ public class PacienteModel {
     public void setFecha_actualizacion(LocalDateTime fecha_actualizacion) {
         this.fecha_actualizacion = fecha_actualizacion;
     }
+
+    public Boolean getAcepta_notificaciones() { return acepta_notificaciones; }
+
+    public void setAcepta_notificaciones(Boolean acepta_notificaciones) { this.acepta_notificaciones = acepta_notificaciones; }
+
+    public LocalDateTime getFecha_consentimiento() { return fecha_consentimiento; }
+
+    public void setFecha_consentimiento(LocalDateTime fecha_consentimiento) { this.fecha_consentimiento = fecha_consentimiento; }
 }

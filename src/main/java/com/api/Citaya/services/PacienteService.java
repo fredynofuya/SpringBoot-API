@@ -34,6 +34,9 @@ public class PacienteService {
 
     //Crea un nuevo paciente, devuelve el paciente creado
     public PacienteModel postPaciente(PacienteModel paciente) {
+        boolean acepta = Boolean.TRUE.equals(paciente.getAcepta_notificaciones());
+        paciente.setAcepta_notificaciones(acepta);
+        paciente.setFecha_consentimiento(acepta ? LocalDateTime.now() : null);
         return pacienteRepository.save(paciente);
     }
 
@@ -59,6 +62,12 @@ public class PacienteService {
         pacienteModel.setTelefono(request.getTelefono() != null ? request.getTelefono() : pacienteModel.getTelefono());
         pacienteModel.setEps(request.getEps() != null ? request.getEps() : pacienteModel.getEps());
         //El campo fecha_registro se actualiza con la fecha actual, ya que se asume que el paciente se actualiza en el momento de la actualización
+        Boolean acepta = request.getAcepta_notificaciones();
+        if (acepta != null && !acepta.equals(pacienteModel.getAcepta_notificaciones())) {
+            pacienteModel.setAcepta_notificaciones(acepta);
+            pacienteModel.setFecha_consentimiento(acepta ? LocalDateTime.now() : null);
+        }
+
         pacienteModel.setFecha_actualizacion(LocalDateTime.now());
         //Guardamos el paciente actualizado en la base de datos y lo devolvemos
         return pacienteRepository.save(pacienteModel);

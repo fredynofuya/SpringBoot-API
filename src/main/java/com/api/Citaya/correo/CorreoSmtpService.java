@@ -12,6 +12,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
+import java.util.concurrent.CompletableFuture;
+
 @Service
 @ConditionalOnProperty(name = "app.correo.modo", havingValue = "smtp", matchIfMissing = true)
 public class CorreoSmtpService implements EmailService {
@@ -24,42 +26,57 @@ public class CorreoSmtpService implements EmailService {
     @Value("${spring.mail.username:}")
     private String remitente;
 
+    @Value("${app.institucion.nombre:MedSoftIA}")
+    private String nombreRemitente;
+
     // @Async: la respuesta HTTP no espera al servidor de correo, así el tiempo de respuesta
     // no revela si el correo existía o no.
     @Async
     @Override
     public void enviarRecuperacion(String destinatario, String nombre, String enlace, int minutosVigencia) {
+        String texto = "Hola " + nombre + ",\n\n"
+                + "Recibimos una solicitud para restablecer la contraseña de tu cuenta de MedSoftIA.\n"
+                + "Usa este enlace (un solo uso, vence en " + minutosVigencia + " minutos):\n"
+                + enlace + "\n\n"
+                + "Si no fuiste tú, ignora este correo: tu contraseña no cambiará.";
+
+        String html = """
+                <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;color:#2f3e44">
+                  <h2 style="color:#568281">MedSoftIA</h2>
+                  <p>Hola %s,</p>
+                  <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.
+                     Este enlace es de un solo uso y vence en %d minutos.</p>
+                  <p style="text-align:center;margin:28px 0">
+                    <a href="%s" style="background:#1a7f8c;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:bold">Crear nueva contraseña</a>
+                  </p>
+                  <p style="font-size:13px;color:#6b7a7a">Si el botón no funciona, copia y pega esta dirección en tu navegador:<br>%s</p>
+                  <p style="font-size:13px;color:#6b7a7a">Si no fuiste tú, ignora este correo: tu contraseña no cambiará.</p>
+                </div>
+                """.formatted(HtmlUtils.htmlEscape(nombre), minutosVigencia, enlace, enlace);
+
+        despachar(destinatario, "Recupera tu contraseña de MedSoftIA", texto, html);
+    }
+
+    @Async
+    @Override
+    public CompletableFuture<Boolean> enviar(String destinatario, String asunto, String texto, String html) {
+        return CompletableFuture.completedFuture(despachar(destinatario, asunto, texto, html));
+    }
+
+    private boolean despachar(String destinatario, String asunto, String texto, String html) {
         try {
-            String texto = "Hola " + nombre + ",\n\n"
-                    + "Recibimos una solicitud para restablecer la contraseña de tu cuenta de MedSoftIA.\n"
-                    + "Usa este enlace (un solo uso, vence en " + minutosVigencia + " minutos):\n"
-                    + enlace + "\n\n"
-                    + "Si no fuiste tú, ignora este correo: tu contraseña no cambiará.";
-
-            String html = """
-                    <div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;color:#2f3e44">
-                      <h2 style="color:#568281">MedSoftIA</h2>
-                      <p>Hola %s,</p>
-                      <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.
-                         Este enlace es de un solo uso y vence en %d minutos.</p>
-                      <p style="text-align:center;margin:28px 0">
-                        <a href="%s" style="background:#1a7f8c;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:bold">Crear nueva contraseña</a>
-                      </p>
-                      <p style="font-size:13px;color:#6b7a7a">Si el botón no funciona, copia y pega esta dirección en tu navegador:<br>%s</p>
-                      <p style="font-size:13px;color:#6b7a7a">Si no fuiste tú, ignora este correo: tu contraseña no cambiará.</p>
-                    </div>
-                    """.formatted(HtmlUtils.htmlEscape(nombre), minutosVigencia, enlace, enlace);
-
             MimeMessage mensaje = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
-            helper.setFrom(remitente, "MedSoftIA");
+            helper.setFrom(remitente, nombreRemitente);
             helper.setTo(destinatario);
-            helper.setSubject("Recupera tu contraseña de MedSoftIA");
+            helper.setSubject(asunto);
             helper.setText(texto, html);
             mailSender.send(mensaje);
+            return true;
         } catch (Exception e) {
-            // No se registra el enlace ni se propaga el error: el usuario recibe la misma respuesta siempre.
-            log.error("No se pudo enviar el correo de recuperación: {}", e.getMessage());
+            // No se registra el contenido ni el destinatario: pueden ser datos personales.
+            log.error("No se pudo enviar el correo \"{}\": {}", asunto, e.getMessage());
+            return false;
         }
     }
 }

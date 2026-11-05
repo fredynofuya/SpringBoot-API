@@ -42,6 +42,9 @@ public class CitaModel {
     @Transient
     private String ubicacionConsultorio;
 
+    @Transient
+    private Boolean acepta_notificaciones;
+
     @Column (name = "Fecha")
     private LocalDate fecha;
 
@@ -260,4 +263,8 @@ public class CitaModel {
     public void setFecha_actualizacion(LocalDateTime fecha_actualizacion) {
         this.fecha_actualizacion = fecha_actualizacion;
     }
+
+    public Boolean getAcepta_notificaciones() { return acepta_notificaciones; }
+
+    public void setAcepta_notificaciones(Boolean acepta_notificaciones) { this.acepta_notificaciones = acepta_notificaciones; }
 }
