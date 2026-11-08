@@ -2,12 +2,14 @@ package com.api.Citaya.repositories;
 
 import com.api.Citaya.models.CitaModel;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 // Repositorio de citas, extiende de JpaRepository para heredar los métodos CRUD básicos para manejar
 // las citas registradas en la base de datos, se encarga de interactuar con la base de datos para realizar las operaciones CRUD
@@ -27,4 +29,22 @@ public interface ICitaRepository extends JpaRepository<CitaModel, Integer> {
     @Query("SELECT c FROM CitaModel c WHERE c.id_medico = :idMedico AND c.estado = :estado")
     List<CitaModel> findByIdMedicoAndEstado(@Param("idMedico") Integer idMedico, @Param("estado") CitaModel.Estado estado);
 
+    // metodo para buscar citas por id de paciente y estado, devuelve una lista de citas que coinciden con el id del
+    //  paciente y el estado especificado
+    List<CitaModel> findByActivoTrue();
+    Optional<CitaModel> findByIdAndActivoTrue(Integer id);
+
+    @Modifying(
+            clearAutomatically = true,
+            flushAutomatically = true
+    )
+    @Query("""
+        UPDATE CitaModel c
+        SET c.activo = false
+        WHERE c.id_paciente = :idPaciente
+        AND c.activo = true
+    """)
+    int desactivarCitasPorPaciente(
+            @Param("idPaciente") Integer idPaciente
+    );
 }

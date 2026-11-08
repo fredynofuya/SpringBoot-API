@@ -76,6 +76,9 @@ public class CitaModel {
     @Column(name = "Fecha_Actualizacion")
     private LocalDateTime fecha_actualizacion;
 
+    @Column(name = "Activo", nullable = false)
+    private Boolean activo = true;
+
     @Transient
     private String nombre;
 
@@ -260,9 +263,11 @@ public class CitaModel {
         return fecha_actualizacion;
     }
 
-    public void setFecha_actualizacion(LocalDateTime fecha_actualizacion) {
-        this.fecha_actualizacion = fecha_actualizacion;
-    }
+    public void setFecha_actualizacion(LocalDateTime fecha_actualizacion) {this.fecha_actualizacion = fecha_actualizacion;}
+
+    public Boolean getActivo() {return activo;}
+
+    public void setActivo(Boolean activo) {this.activo = activo;}
 
     public Boolean getAcepta_notificaciones() { return acepta_notificaciones; }
 

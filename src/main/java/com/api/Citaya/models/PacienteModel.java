@@ -63,6 +63,9 @@ public class PacienteModel {
     @Column(name = "Fecha_Actualizacion")
     private LocalDateTime fecha_actualizacion;
 
+    @Column(name = "Activo", nullable = false)
+    private Boolean activo = true;
+
     public int getId() {
         return id;
     }
@@ -137,4 +140,8 @@ public class PacienteModel {
     public LocalDateTime getFecha_consentimiento() { return fecha_consentimiento; }
 
     public void setFecha_consentimiento(LocalDateTime fecha_consentimiento) { this.fecha_consentimiento = fecha_consentimiento; }
+
+    public Boolean getActivo() { return activo;}
+
+    public void setActivo(Boolean activo) { this.activo = activo;}
 }
