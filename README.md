@@ -57,3 +57,12 @@ jwt.expiration-ms=${JWT_EXPIRATION_MS:86400000}
 - /usuarios
 - /login
 
+### Despliegue en Railway con Docker
+
+Railway detecta el `Dockerfile` de la raíz y construye la imagen automáticamente; no necesitas instalar Docker en tu equipo. Configura estas variables en el servicio:
+
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASSWORD`: conexión a MySQL.
+- `JWT_SECRET`: secreto de al menos 32 bytes.
+- `FRONTEND_URL`: URL pública del frontend.
+
+Railway proporciona `PORT` automáticamente. Si vas a enviar correos, configura también `MAIL_USER` y `MAIL_PASSWORD` (y opcionalmente `MAIL_HOST` y `MAIL_PORT`). `CORS_ORIGINS` puede contener los orígenes permitidos separados por comas.
