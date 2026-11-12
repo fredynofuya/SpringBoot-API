@@ -24,15 +24,20 @@ Este proyecto corresponde al backend de una aplicación para la gestión de cita
 ---
 ### 3. Configurar variables de entorno
 
-La aplicación usa `DB_URL` para la conexión JDBC (no `URL`, que puede estar sin definir o contener una URL que no sea JDBC). Para desarrollo local, la URL tiene como valor predeterminado `jdbc:mysql://localhost:3306/citaya` y el usuario predeterminado es `root`. Define `PASSWORD` con la contraseña de MySQL; si la cuenta no tiene contraseña, expórtala vacía (`export PASSWORD=`).
+La aplicación usa `DB_URL` para la conexión JDBC (no `URL`, que puede estar sin definir o contener una URL que no sea JDBC). Para desarrollo local, la URL tiene como valor predeterminado, por ejemplo: `jdbc:mysql://{DB_HOST}:${DB_PORT}/${DB_NAME}` y el usuario predeterminado es `root`. Define `PASSWORD` con la contraseña de MySQL; si la cuenta no tiene contraseña, expórtala vacía (`export PASSWORD=`).
 
 Configura el secreto JWT (de al menos 32 bytes) y, si corresponde, las credenciales de MySQL:
 
 ```sh
-JWT_SECRET=tu_secreto_jwt_de_al_menos_32_bytes
-USER_NAME=tu_usuario
-PASSWORD=tu_contraseña
-DB_URL='jdbc:mysql://localhost:3306/citaya?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true'
+
+# Base de datos
+spring.datasource.url=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.username=${DB_USER}
+spring.datasource.password=${DB_PASSWORD}
+
+# JWT
+jwt.secret=${JWT_SECRET}
+jwt.expiration-ms=${JWT_EXPIRATION_MS:86400000}
 ```
 
 `PORT` es opcional y usa `8080` por defecto. `JWT_EXPIRATION_MS` también es opcional y usa `86400000` (24 horas). Las variables exportadas deben estar definidas en la misma terminal desde la que se inicia Maven.
@@ -46,3 +51,6 @@ DB_URL='jdbc:mysql://localhost:3306/citaya?useSSL=false&serverTimezone=UTC&allow
 - /medicos
 - /citas
 - /agenda
+- /usuarios
+- /login
+
