@@ -22,13 +22,17 @@ Este proyecto corresponde al backend de una aplicación para la gestión de cita
 - Crear base de datos en MySQL:
 - CREATE DATABASE citaya
 ---
-### 3. Configurar variables de entorno
+### 3. Configurar variables de entorno (application.properties)
 
 La aplicación usa `DB_URL` para la conexión JDBC (no `URL`, que puede estar sin definir o contener una URL que no sea JDBC). Para desarrollo local, la URL tiene como valor predeterminado, por ejemplo: `jdbc:mysql://{DB_HOST}:${DB_PORT}/${DB_NAME}` y el usuario predeterminado es `root`. Define `PASSWORD` con la contraseña de MySQL; si la cuenta no tiene contraseña, expórtala vacía (`export PASSWORD=`).
 
-Configura el secreto JWT (de al menos 32 bytes) y, si corresponde, las credenciales de MySQL:
+Configura el secreto JWT (de al menos 32 bytes) y, si corresponde, las credenciales de MySQL.
+`PORT` es opcional y usa `8080` por defecto. `JWT_EXPIRATION_MS` también es opcional y usa `86400000` (24 horas).
+Las variables exportadas deben estar definidas en la misma terminal desde la que se inicia Maven
 
 ```sh
+spring.application.name=Citaya
+server.port=${PORT:8080}
 
 # Base de datos
 spring.datasource.url=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
@@ -38,9 +42,8 @@ spring.datasource.password=${DB_PASSWORD}
 # JWT
 jwt.secret=${JWT_SECRET}
 jwt.expiration-ms=${JWT_EXPIRATION_MS:86400000}
-```
 
-`PORT` es opcional y usa `8080` por defecto. `JWT_EXPIRATION_MS` también es opcional y usa `86400000` (24 horas). Las variables exportadas deben estar definidas en la misma terminal desde la que se inicia Maven.
+```
 ---
 ### 4. Ejecutar proyecto
 - mvn clean install
