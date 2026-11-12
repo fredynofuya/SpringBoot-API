@@ -76,7 +76,7 @@ public class CitaModel {
     @Column(name = "Fecha_Actualizacion")
     private LocalDateTime fecha_actualizacion;
 
-    @Column(name = "Activo", nullable = false)
+    @Column(name = "Activo", nullable = false, columnDefinition = "TINYINT(1) NOT NULL DEFAULT 1")
     private Boolean activo = true;
 
     @Transient

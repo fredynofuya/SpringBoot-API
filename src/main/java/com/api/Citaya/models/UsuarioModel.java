@@ -29,7 +29,7 @@ public class UsuarioModel {
     @Enumerated(EnumType.STRING)
     private Rol rol;
 
-    @Column(name = "Activo")
+    @Column(name = "Activo", columnDefinition = "TINYINT(1) DEFAULT 1")
     private Boolean activo = true;
 
     @CreationTimestamp

@@ -39,7 +39,7 @@ public class PacienteModel {
     @Column (name = "Telefono")
     private String telefono;
 
-    @Column(name = "Acepta_Notificaciones")
+    @Column(name = "Acepta_Notificaciones", columnDefinition = "TINYINT(1) NOT NULL DEFAULT 0")
     private Boolean acepta_notificaciones = false;
 
     @Column(name = "Fecha_Consentimiento")
@@ -63,7 +63,7 @@ public class PacienteModel {
     @Column(name = "Fecha_Actualizacion")
     private LocalDateTime fecha_actualizacion;
 
-    @Column(name = "Activo", nullable = false)
+    @Column(name = "Activo", nullable = false, columnDefinition = "TINYINT(1) NOT NULL DEFAULT 1")
     private Boolean activo = true;
 
     public int getId() {
